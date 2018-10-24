@@ -159,4 +159,20 @@ class DynamicByteBufferTest {
         }
         assertArrayEquals(expected, bytes);
     }
+
+    @Test
+    void clear() {
+        final var expected = nextByteArray(4096);
+        final var buffer = new DynamicByteBuffer(expected);
+        buffer.clear();
+
+        assertTrue(buffer.isEmpty());
+        assertEquals(0, buffer.length());
+        assertArrayEquals(new byte[0], buffer.toByteArray());
+
+        buffer.append(expected);
+
+        final byte[] bytes = buffer.toByteArray();
+        assertArrayEquals(expected, bytes);
+    }
 }
