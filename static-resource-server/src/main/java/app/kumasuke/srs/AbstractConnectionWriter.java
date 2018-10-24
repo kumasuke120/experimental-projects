@@ -15,29 +15,39 @@ import java.util.Queue;
 public abstract class AbstractConnectionWriter<T> implements ConnectionWriter {
     protected static final Logger logger = LoggerFactory.getLogger(ConnectionWriter.class);
 
-    private static final int BUFFER_SIZE = 8192;
+    private static final int BUFFER_SIZE = 128 * 1024;  // 128 KiB
 
     protected final Queue<T> objects = new LinkedList<>();
 
+    private final ByteBuffer buffer = ByteBuffer.allocate(BUFFER_SIZE);
+
     protected final int write(@Nonnull DynamicByteBuffer srcBuffer, @Nonnull Connection connection)
             throws IOException {
-        final var buffer = ByteBuffer.allocate(BUFFER_SIZE);
+        buffer.clear();
 
-        final int popLength = BUFFER_SIZE > srcBuffer.length() ? srcBuffer.length() : BUFFER_SIZE;
-        if (popLength != 0) {
-            final byte[] bytes = srcBuffer.pop(popLength);
+        final int getLength = BUFFER_SIZE > srcBuffer.length() ? srcBuffer.length() : BUFFER_SIZE;
+        if (getLength != 0) {
+            final byte[] bytes = srcBuffer.get(0, getLength);
             buffer.put(bytes);
             buffer.flip();
+
+            int totalBytesWrite = 0;
+            int nBytesWrite;
+            do {
+                nBytesWrite = connection.socketChannel().write(buffer);
+                totalBytesWrite += nBytesWrite;
+            } while (nBytesWrite != 0 && buffer.hasRemaining());
+
+            // totalBytesWrite may smaller than or equal to getLength,
+            // only pops with then length that actually writes
+            if (totalBytesWrite != 0) {
+                srcBuffer.pop(totalBytesWrite);
+            }
+
+            return totalBytesWrite;
+        } else {
+            return 0;
         }
-
-        int totalBytesWrite = 0;
-        int nBytesWrite;
-        do {
-            nBytesWrite = connection.socketChannel().write(buffer);
-            totalBytesWrite += nBytesWrite;
-        } while (nBytesWrite > 0 && buffer.hasRemaining());
-
-        return totalBytesWrite;
     }
 
     @Nullable

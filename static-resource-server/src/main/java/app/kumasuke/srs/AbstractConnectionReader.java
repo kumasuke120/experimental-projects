@@ -20,24 +20,11 @@ public abstract class AbstractConnectionReader<T> implements ConnectionReader {
 
     protected final Queue<T> objects = new LinkedList<>();
 
-    @Override
-    public boolean hasNext() {
-        return !objects.isEmpty();
-    }
-
-    @Nullable
-    @Override
-    public T next() {
-        try {
-            return objects.poll();
-        } catch (NoSuchElementException e) {
-            return null;
-        }
-    }
+    private final ByteBuffer buffer = ByteBuffer.allocate(BUFFER_SIZE);
 
     protected final int read(@Nonnull Connection connection, @Nonnull DynamicByteBuffer dstBuffer)
             throws IOException {
-        final var buffer = ByteBuffer.allocate(BUFFER_SIZE);
+        buffer.clear();
 
         int totalBytesRead = 0;
         int nBytesRead;
@@ -58,5 +45,20 @@ public abstract class AbstractConnectionReader<T> implements ConnectionReader {
         }
 
         return totalBytesRead;
+    }
+
+    @Override
+    public boolean hasNext() {
+        return !objects.isEmpty();
+    }
+
+    @Nullable
+    @Override
+    public T next() {
+        try {
+            return objects.poll();
+        } catch (NoSuchElementException e) {
+            return null;
+        }
     }
 }

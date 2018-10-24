@@ -21,10 +21,7 @@ public class DynamicByteBuffer {
     }
 
     private DynamicByteBuffer(int initialCapacity) {
-        final int blockCount = initialCapacity / BLOCK_BYTE_COUNT + 1;
-        this.blocks = new Object[blockCount > INITIAL_BLOCK_COUNT ? blockCount : INITIAL_BLOCK_COUNT];
-        this.beginCursor = 0;
-        this.endCursor = 0;
+        initializeBlocks(initialCapacity);
     }
 
     public boolean isEmpty() {
@@ -118,6 +115,10 @@ public class DynamicByteBuffer {
         }
     }
 
+    public void clear() {
+        initializeBlocks(INITIAL_BLOCK_COUNT * BLOCK_BYTE_COUNT);
+    }
+
     public byte[] toByteArray() {
         final byte[] result = new byte[length()];
 
@@ -153,6 +154,13 @@ public class DynamicByteBuffer {
     @Override
     public String toString() {
         return toString(Charset.defaultCharset());
+    }
+
+    private void initializeBlocks(int initialCapacity) {
+        final int blockCount = initialCapacity / BLOCK_BYTE_COUNT + 1;
+        blocks = new Object[blockCount > INITIAL_BLOCK_COUNT ? blockCount : INITIAL_BLOCK_COUNT];
+        beginCursor = 0;
+        endCursor = 0;
     }
 
     private void shrinkBlockWhenPossible() {

@@ -15,6 +15,14 @@ public class HttpConnectionWriter extends AbstractConnectionWriter<HttpResponse>
         HttpResponse response;
         while ((response = next()) != null) {
             byte[] bytes = HttpSupport.toBytes(response);
+            // same Connection won't send a second request before the first
+            // completes. When this happens, it can only because the client
+            // cancels receiving and re-send another request
+            // under such circumstances, we cancel data sending of the first
+            // request
+            if (!writeBuffer.isEmpty()) {
+                writeBuffer.clear();
+            }
             writeBuffer.append(bytes);
 
             logger.info("Connection#{} response enqueued: statusCode = {}, statusText = {}",
