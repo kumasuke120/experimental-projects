@@ -18,8 +18,8 @@ public class HttpConnectionWriter extends AbstractConnectionWriter<HttpResponse>
             // same Connection won't send a second request before the first
             // completes. When this happens, it can only because the client
             // cancels receiving and re-send another request
-            // under such circumstances, we cancel data sending of the first
-            // request
+            // under such circumstances, we have to cancel data sending of
+            // the first request
             if (!writeBuffer.isEmpty()) {
                 writeBuffer.clear();
             }

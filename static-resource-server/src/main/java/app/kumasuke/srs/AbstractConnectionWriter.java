@@ -39,7 +39,7 @@ public abstract class AbstractConnectionWriter<T> implements ConnectionWriter {
             } while (nBytesWrite != 0 && buffer.hasRemaining());
 
             // totalBytesWrite may smaller than or equal to getLength,
-            // only pops with then length that actually writes
+            // only pops with the length that actually writes
             if (totalBytesWrite != 0) {
                 srcBuffer.pop(totalBytesWrite);
             }
