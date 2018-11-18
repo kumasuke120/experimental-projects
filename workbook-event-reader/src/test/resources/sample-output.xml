@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document>
+    <sheet index="0" name="Sheet1">
+        <row index="0">
+            <cell javaType="java.lang.String" index="0">Integer or Long</cell>
+            <cell javaType="java.lang.Integer" index="1">1</cell>
+            <cell javaType="java.lang.Integer" index="2">-10</cell>
+            <cell javaType="java.lang.Long" index="3">10000000000</cell>
+            <cell javaType="java.lang.Long" index="4">-10000000000</cell>
+        </row>
+        <row index="1">
+            <cell javaType="java.lang.String" index="0">Double</cell>
+            <cell javaType="java.lang.Double" index="1">9.9</cell>
+            <cell javaType="java.lang.Double" index="2">-0.5555555555555556</cell>
+            <cell javaType="java.lang.Integer" index="3">0</cell>
+        </row>
+        <row index="2">
+            <cell javaType="java.lang.String" index="0">LocalTime</cell>
+            <cell javaType="java.time.LocalTime" index="1">10:30</cell>
+            <cell javaType="java.time.LocalTime" index="2">21:30:01</cell>
+        </row>
+        <row index="3">
+            <cell javaType="java.lang.String" index="0">LocalDate</cell>
+            <cell javaType="java.time.LocalDate" index="1">2018-11-09</cell>
+        </row>
+        <row index="4">
+            <cell javaType="java.lang.String" index="0">LocalDateTime</cell>
+            <cell javaType="java.time.LocalDateTime" index="1">2018-11-09T08:00</cell>
+        </row>
+        <row index="5">
+            <cell javaType="java.lang.String" index="0">String</cell>
+            <cell javaType="java.lang.String" index="1">The quick brown fox jumps over the lazy dog</cell>
+            <cell javaType="java.lang.String" index="2">123</cell>
+            <cell javaType="java.lang.String" index="3">1234567890</cell>
+        </row>
+        <row index="6">
+            <cell javaType="java.lang.String" index="0">Boolean</cell>
+            <cell javaType="java.lang.Boolean" index="1">true</cell>
+            <cell javaType="java.lang.Boolean" index="2">false</cell>
+        </row>
+        <row index="7">
+            <cell javaType="java.lang.String" index="0">Error</cell>
+            <cell javaType="null" index="1"/>
+            <cell javaType="null" index="2"/>
+            <cell javaType="null" index="3"/>
+        </row>
+    </sheet>
+    <sheet index="1" name="Sheet2">
+        <row index="0">
+            <cell javaType="java.lang.String" index="0">Integer or Long</cell>
+            <cell javaType="null" index="1"/>
+            <cell javaType="null" index="2"/>
+            <cell javaType="null" index="3"/>
+            <cell javaType="null" index="4"/>
+        </row>
+        <row index="1">
+            <cell javaType="java.lang.String" index="0">Double</cell>
+            <cell javaType="null" index="1"/>
+            <cell javaType="null" index="2"/>
+            <cell javaType="null" index="3"/>
+        </row>
+        <row index="2">
+            <cell javaType="java.lang.String" index="0">LocalTime</cell>
+            <cell javaType="null" index="1"/>
+            <cell javaType="null" index="2"/>
+        </row>
+        <row index="3">
+            <cell javaType="java.lang.String" index="0">LocalDate</cell>
+            <cell javaType="null" index="1"/>
+        </row>
+        <row index="4">
+            <cell javaType="java.lang.String" index="0">LocalDateTime</cell>
+            <cell javaType="null" index="1"/>
+        </row>
+        <row index="5">
+            <cell javaType="java.lang.String" index="0">String</cell>
+            <cell javaType="null" index="1"/>
+            <cell javaType="null" index="2"/>
+            <cell javaType="null" index="3"/>
+        </row>
+        <row index="6">
+            <cell javaType="java.lang.String" index="0">Boolean</cell>
+            <cell javaType="null" index="1"/>
+            <cell javaType="null" index="2"/>
+        </row>
+        <row index="7">
+            <cell javaType="java.lang.String" index="0">Error</cell>
+            <cell javaType="null" index="1"/>
+            <cell javaType="null" index="2"/>
+            <cell javaType="null" index="3"/>
+        </row>
+    </sheet>
+</document>
