@@ -108,11 +108,11 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
     abstract void doOpen(Path filePath) throws Exception;
 
     /**
-     * Creates a resource clean action to close all resources this {@link WorkbookEventReader}
+     * Creates a resource-cleaning action to close all resources this {@link WorkbookEventReader}
      * has opened.<br>
      * <br>
      * * The implementation of {@link ReaderCleanAction} should not be an anonymous or non-static inner class.
-     * In addition, it should not contains any reference of the containing {@link WorkbookEventReader}.
+     * In addition, it should not contain any reference of the containing {@link WorkbookEventReader}.
      *
      * @return a non-anonymous instance of {@link ReaderCleanAction}
      */
@@ -418,7 +418,7 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
         }
 
         /**
-         * Closes the resources of the related {@link WorkbookEventReader}. <br>
+         * Closes the resources from the related {@link WorkbookEventReader}. <br>
          * <br>
          * * This method should not throw any {@link WorkbookEventReaderException}, because it is the duty of its
          * caller to wrap every exception it throws into {@link WorkbookEventReaderException}.
