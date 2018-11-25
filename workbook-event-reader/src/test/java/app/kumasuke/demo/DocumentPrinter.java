@@ -7,7 +7,7 @@ import app.kumasuke.util.ResourceUtil;
 
 import java.nio.file.Path;
 
-public class MyApplication {
+public class DocumentPrinter {
     public static void main(String[] args) {
         System.out.println("Print 'workbook.xlsx':");
         System.out.println("--------------------------------------------------");
