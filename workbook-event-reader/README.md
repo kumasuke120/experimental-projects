@@ -86,7 +86,7 @@ public class ToXmlPrinter {
             xml.append("<cell index=\"")
                     .append(columnNum)
                     .append("\" javaType=\"")
-                    .append(cellValue.isNull() ? null : cellValue.originalType().getCanonicalName())
+                    .append(cellValue.isNull() ? "null" : cellValue.originalType().getCanonicalName())
                     .append("\">")
                     .append(cellValue.isNull() ? "" : cellValue.originalValue())
                     .append("</cell>");
