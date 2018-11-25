@@ -2,8 +2,8 @@
 Re-encapsulates [Apache POI](https://poi.apache.org/) Event API for processing Excel workbook, making it easy for reading SpreadsheetML and legacy Excel document with a same unified interface.
 All values read from Excel document will be converted to sensible corresponding Java types.
 
-## Sample Program
-The following code reads and converts its content to a well-formed XML document:
+## Sample
+The following code reads a workbook and converts its content to a well-formed XML document:
 ```java
 public class ToXmlPrinter {
     public static void main(String[] args) {
@@ -17,8 +17,7 @@ public class ToXmlPrinter {
         System.out.println(theXml);
     }
 
-    private static class XmlGenerator 
-        implements WorkbookEventReader.EventHandler {
+    private static class XmlGenerator implements WorkbookEventReader.EventHandler {
         private final StringBuilder xml;
 
         private int currentIndentLevel = 0;
@@ -82,17 +81,14 @@ public class ToXmlPrinter {
         }
 
         @Override
-        public void onHandleCell(int sheetIndex, int rowNum, int columnNum, 
-            CellValue cellValue) {
+        public void onHandleCell(int sheetIndex, int rowNum, int columnNum, CellValue cellValue) {
             newLine();
             xml.append("<cell index=\"")
                     .append(columnNum)
                     .append("\" javaType=\"")
-                    .append(cellValue.isNull() ? null : 
-                        cellValue.originalType().getCanonicalName())
+                    .append(cellValue.isNull() ? null : cellValue.originalType().getCanonicalName())
                     .append("\">")
-                    .append(cellValue.isNull() ? "" : 
-                        cellValue.originalValue())
+                    .append(cellValue.isNull() ? "" : cellValue.originalValue())
                     .append("</cell>");
         }
 
