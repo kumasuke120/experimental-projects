@@ -3,6 +3,7 @@ package app.kumasuke.excel;
 import org.apache.poi.ss.usermodel.BuiltinFormats;
 import org.apache.poi.ss.usermodel.DateUtil;
 
+import java.lang.ref.Cleaner;
 import java.nio.file.Path;
 import java.time.*;
 import java.util.Date;
@@ -17,6 +18,10 @@ import java.util.regex.Pattern;
  * The base class for {@link WorkbookEventReader}, which containing common methods and utilities
  */
 abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
+    private static final Cleaner cleaner = Cleaner.create();
+
+    private final Cleaner.Cleanable cleanable;
+
     private volatile boolean closed = false;
     private volatile boolean reading = false;
 
@@ -35,6 +40,9 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
         } catch (Exception e) {
             throw new WorkbookIOException("Cannot open workbook file", e);
         }
+
+        final ReaderCleanAction action = createCleanAction();
+        cleanable = cleaner.register(this, action);
     }
 
     /**
@@ -100,6 +108,17 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
     abstract void doOpen(Path filePath) throws Exception;
 
     /**
+     * Creates a resource clean action to close all resources this {@link WorkbookEventReader}
+     * has opened.<br>
+     * <br>
+     * * The implementation of {@link ReaderCleanAction} should not be an anonymous or non-static inner class.
+     * In addition, it should not contains any reference of the containing {@link WorkbookEventReader}.
+     *
+     * @return a non-anonymous instance of {@link ReaderCleanAction}
+     */
+    abstract ReaderCleanAction createCleanAction();
+
+    /**
      * {@inheritDoc}
      */
     @Override
@@ -155,24 +174,11 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
     public final void close() {
         if (!closed) {
             reading = false;
-            try {
-                doClose();
-                closed = true;
-            } catch (Exception e) {
-                throw new WorkbookIOException("Exception encountered when closing the workbook file", e);
-            }
+            closed = true;
+
+            cleanable.clean();
         }
     }
-
-    /**
-     * Closes this {@link AbstractWorkbookEventReader}. <br>
-     * <br>
-     * * This method should not throw any {@link WorkbookEventReaderException}, because it is the duty of its
-     * caller to wrap every exception it throws into {@link WorkbookEventReaderException}.
-     *
-     * @throws Exception any exception occurred during closing process
-     */
-    abstract void doClose() throws Exception;
 
     /**
      * Returns current reading state of the reader.
@@ -369,6 +375,7 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
             }
         }
 
+        // converts 'A' to 0, 'B' to 1, ..., 'AA' to 26, and etc.
         private static int columnNameToInt(String columnName) {
             int index = 0;
 
@@ -384,9 +391,40 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
             return index;
         }
 
+        /**
+         * Tests if the given index of format or format string stands for a text format.
+         *
+         * @param formatIndex  index of format
+         * @param formatString format string
+         * @return <code>true</code> if the given arguments stand for a text format, otherwise <code>false</code>
+         */
         static boolean isATextFormat(int formatIndex, String formatString) {
             return formatIndex == 0x31 ||
                     BuiltinFormats.getBuiltinFormat(formatString) == 0x31;
         }
+    }
+
+    /**
+     * A clean action for closes the resources opened by a {@link WorkbookEventReader}
+     */
+    static abstract class ReaderCleanAction implements Runnable {
+        @Override
+        public final void run() {
+            try {
+                doClean();
+            } catch (Exception e) {
+                throw new WorkbookIOException("Exception encountered when closing the workbook file", e);
+            }
+        }
+
+        /**
+         * Closes the resources of the related {@link WorkbookEventReader}. <br>
+         * <br>
+         * * This method should not throw any {@link WorkbookEventReaderException}, because it is the duty of its
+         * caller to wrap every exception it throws into {@link WorkbookEventReaderException}.
+         *
+         * @throws Exception any exception occurred during closing process
+         */
+        abstract void doClean() throws Exception;
     }
 }

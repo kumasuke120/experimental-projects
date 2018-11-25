@@ -10,7 +10,6 @@ import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.DateUtil;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -41,6 +40,11 @@ public class HSSFWorkbookEventReader extends AbstractWorkbookEventReader {
     }
 
     @Override
+    ReaderCleanAction createCleanAction() {
+        return new HSSFReaderCleanAction(this);
+    }
+
+    @Override
     void doRead(EventHandler handler) throws Exception {
         handler.onStartDocument();
 
@@ -59,13 +63,23 @@ public class HSSFWorkbookEventReader extends AbstractWorkbookEventReader {
         }
     }
 
-    @Override
-    void doClose() throws IOException {
-        if (poifsFileSystem != null) {
-            poifsFileSystem.close();
+    private static class HSSFReaderCleanAction extends ReaderCleanAction {
+        private final InputStream fileIs;
+        private final POIFSFileSystem poifsFileSystem;
+
+        HSSFReaderCleanAction(HSSFWorkbookEventReader reader) {
+            fileIs = reader.fileIs;
+            poifsFileSystem = reader.poifsFileSystem;
         }
-        if (fileIs != null) {
-            fileIs.close();
+
+        @Override
+        void doClean() throws Exception {
+            if (poifsFileSystem != null) {
+                poifsFileSystem.close();
+            }
+            if (fileIs != null) {
+                fileIs.close();
+            }
         }
     }
 

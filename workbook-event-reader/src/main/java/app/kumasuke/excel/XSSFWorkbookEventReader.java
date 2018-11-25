@@ -72,6 +72,11 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
     }
 
     @Override
+    ReaderCleanAction createCleanAction() {
+        return new XSSFReaderCleanAction(this);
+    }
+
+    @Override
     void doRead(EventHandler handler) throws Exception {
         int currentSheetIndex = -1;
 
@@ -118,15 +123,23 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
         return factory.newSAXParser();
     }
 
-    @Override
-    void doClose() throws IOException {
-        if (opcPackage != null) {
-            opcPackage.close();
-        }
-    }
-
     // stops EventHandler, not an actual exception
     private static class CancelReadingException extends SAXException {
+    }
+
+    private static class XSSFReaderCleanAction extends ReaderCleanAction {
+        private final OPCPackage opcPackage;
+
+        XSSFReaderCleanAction(XSSFWorkbookEventReader reader) {
+            this.opcPackage = reader.opcPackage;
+        }
+
+        @Override
+        void doClean() throws Exception {
+            if (opcPackage != null) {
+                opcPackage.close();
+            }
+        }
     }
 
     private class ReaderSheetHandler extends DefaultHandler {
