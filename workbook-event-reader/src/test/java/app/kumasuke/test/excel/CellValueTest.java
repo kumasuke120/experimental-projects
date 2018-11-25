@@ -22,11 +22,10 @@ class CellValueTest {
 
         assertTrue(cellValue.isNull());
         assertNull(cellValue.originalValue());
-        assertNull(cellValue.originalType());
+        assertThrows(NullPointerException.class, cellValue::originalType);
         assertThrows(CellValueCastException.class, cellValue::booleanValue);
         assertThrows(CellValueCastException.class, cellValue::intValue);
         assertThrows(CellValueCastException.class, cellValue::longValue);
-        assertThrows(CellValueCastException.class, cellValue::floatValue);
         assertThrows(CellValueCastException.class, cellValue::doubleValue);
         assertThrows(CellValueCastException.class, cellValue::stringValue);
         assertThrows(CellValueCastException.class, cellValue::localTimeValue);
@@ -48,7 +47,6 @@ class CellValueTest {
         });
         assertThrows(CellValueCastException.class, cellValue::intValue);
         assertThrows(CellValueCastException.class, cellValue::longValue);
-        assertThrows(CellValueCastException.class, cellValue::floatValue);
         assertThrows(CellValueCastException.class, cellValue::doubleValue);
         assertDoesNotThrow(() -> {
             final String stringValue = cellValue.stringValue();
@@ -87,10 +85,6 @@ class CellValueTest {
             assertEquals(1L, longValue);
         });
         assertDoesNotThrow(() -> {
-            final double floatValue = cellValue.floatValue();
-            assertEquals(1F, floatValue);
-        });
-        assertDoesNotThrow(() -> {
             final double doubleValue = cellValue.doubleValue();
             assertEquals(1D, doubleValue);
         });
@@ -101,6 +95,21 @@ class CellValueTest {
         assertThrows(CellValueCastException.class, cellValue::localTimeValue);
         assertThrows(CellValueCastException.class, cellValue::localDateValue);
         assertThrows(CellValueCastException.class, cellValue::localDateTimeValue);
+
+
+        final var cellValue2 = newCellValue("1");
+        assertEquals(String.class, cellValue2.originalType());
+        assertDoesNotThrow(() -> {
+            final int intValue = cellValue2.intValue();
+            assertEquals(1, intValue);
+        });
+
+        final var cellValue3 = newCellValue("1.20");
+        assertEquals(String.class, cellValue3.originalType());
+        assertDoesNotThrow(() -> {
+            final int intValue = cellValue3.intValue();
+            assertEquals(1, intValue);
+        });
     }
 
     @Test
@@ -124,10 +133,6 @@ class CellValueTest {
             assertEquals(1L, longValue);
         });
         assertDoesNotThrow(() -> {
-            final double floatValue = cellValue.floatValue();
-            assertEquals(1F, floatValue);
-        });
-        assertDoesNotThrow(() -> {
             final double doubleValue = cellValue.doubleValue();
             assertEquals(1D, doubleValue);
         });
@@ -138,6 +143,20 @@ class CellValueTest {
         assertThrows(CellValueCastException.class, cellValue::localTimeValue);
         assertThrows(CellValueCastException.class, cellValue::localDateValue);
         assertThrows(CellValueCastException.class, cellValue::localDateTimeValue);
+
+        final var cellValue2 = newCellValue(Long.toString(Long.MAX_VALUE));
+        assertEquals(String.class, cellValue2.originalType());
+        assertDoesNotThrow(() -> {
+            final long longValue = cellValue2.longValue();
+            assertEquals(Long.MAX_VALUE, longValue);
+        });
+
+        final var cellValue3 = newCellValue("1.20");
+        assertEquals(String.class, cellValue3.originalType());
+        assertDoesNotThrow(() -> {
+            final long longValue = cellValue3.longValue();
+            assertEquals(1L, longValue);
+        });
     }
 
     @Test
@@ -161,10 +180,6 @@ class CellValueTest {
             assertEquals(1L, longValue);
         });
         assertDoesNotThrow(() -> {
-            final double floatValue = cellValue.floatValue();
-            assertEquals(1F, floatValue);
-        });
-        assertDoesNotThrow(() -> {
             final double doubleValue = cellValue.doubleValue();
             assertEquals(1D, doubleValue);
         });
@@ -175,6 +190,13 @@ class CellValueTest {
         assertThrows(CellValueCastException.class, cellValue::localTimeValue);
         assertThrows(CellValueCastException.class, cellValue::localDateValue);
         assertThrows(CellValueCastException.class, cellValue::localDateTimeValue);
+
+        final var cellValue2 = newCellValue("1.20");
+        assertEquals(String.class, cellValue2.originalType());
+        assertDoesNotThrow(() -> {
+            final double doubleValue = cellValue2.doubleValue();
+            assertEquals(1.2, doubleValue);
+        });
     }
 
     @Test
@@ -192,10 +214,6 @@ class CellValueTest {
         assertDoesNotThrow(() -> {
             final long longValue = cellValue.longValue();
             assertEquals(1L, longValue);
-        });
-        assertDoesNotThrow(() -> {
-            final double floatValue = cellValue.floatValue();
-            assertEquals(1F, floatValue);
         });
         assertDoesNotThrow(() -> {
             final double doubleValue = cellValue.doubleValue();
@@ -220,7 +238,6 @@ class CellValueTest {
         assertThrows(CellValueCastException.class, cellValue::booleanValue);
         assertThrows(CellValueCastException.class, cellValue::intValue);
         assertThrows(CellValueCastException.class, cellValue::longValue);
-        assertThrows(CellValueCastException.class, cellValue::floatValue);
         assertThrows(CellValueCastException.class, cellValue::doubleValue);
         assertDoesNotThrow(() -> {
             final LocalTime localTimeValue = cellValue.localTimeValue();
@@ -237,7 +254,7 @@ class CellValueTest {
         assertThrows(CellValueCastException.class, cellValue::localDateTimeValue);
 
         final LocalTime theTimeValue = LocalTime.now();
-        final CellValue cellValue2 = newCellValue(theTimeValue);
+        final var cellValue2 = newCellValue(theTimeValue);
         assertEquals(theTimeValue, cellValue2.originalValue());
         assertEquals(LocalTime.class, cellValue2.originalType());
         assertEquals(theTimeValue, cellValue2.localTimeValue());
@@ -255,7 +272,6 @@ class CellValueTest {
         assertThrows(CellValueCastException.class, cellValue::booleanValue);
         assertThrows(CellValueCastException.class, cellValue::intValue);
         assertThrows(CellValueCastException.class, cellValue::longValue);
-        assertThrows(CellValueCastException.class, cellValue::floatValue);
         assertThrows(CellValueCastException.class, cellValue::doubleValue);
         assertDoesNotThrow(() -> {
             final String stringValue = cellValue.stringValue();
@@ -287,7 +303,7 @@ class CellValueTest {
         });
 
         final LocalDate theDateValue = LocalDate.now();
-        final CellValue cellValue2 = newCellValue(theDateValue);
+        final var cellValue2 = newCellValue(theDateValue);
         assertEquals(theDateValue, cellValue2.originalValue());
         assertEquals(LocalDate.class, cellValue2.originalType());
         assertThrows(CellValueCastException.class, cellValue::localTimeValue);
@@ -305,7 +321,6 @@ class CellValueTest {
         assertThrows(CellValueCastException.class, cellValue::booleanValue);
         assertThrows(CellValueCastException.class, cellValue::intValue);
         assertThrows(CellValueCastException.class, cellValue::longValue);
-        assertThrows(CellValueCastException.class, cellValue::floatValue);
         assertThrows(CellValueCastException.class, cellValue::doubleValue);
         assertDoesNotThrow(() -> {
             final String stringValue = cellValue.stringValue();
@@ -341,12 +356,34 @@ class CellValueTest {
         });
 
         final LocalDateTime theDateTimeValue = LocalDateTime.now();
-        final CellValue cellValue2 = newCellValue(theDateTimeValue);
+        final var cellValue2 = newCellValue(theDateTimeValue);
         assertEquals(theDateTimeValue, cellValue2.originalValue());
         assertEquals(LocalDateTime.class, cellValue2.originalType());
         assertEquals(theDateTimeValue.toLocalTime(), cellValue2.localTimeValue());
         assertEquals(theDateTimeValue.toLocalDate(), cellValue2.localDateValue());
         assertEquals(theDateTimeValue, cellValue2.localDateTimeValue());
+    }
+
+    @Test
+    void equalsAndHashCode() {
+        // ide generated code, test for coverage
+        final var a = newCellValue(1);
+        final var b = newCellValue(1);
+
+        assertEquals(a, b);
+        assertEquals(a.hashCode(), b.hashCode());
+    }
+
+    @Test
+    @DisplayName("toString()")
+    void _toString() {
+        // test for coverage
+
+        final var a = newCellValue(1);
+        final var b = newCellValue(null);
+
+        assertEquals("1", a.toString());
+        assertEquals("null", b.toString());
     }
 
     private CellValue newCellValue(Object originalValue) {

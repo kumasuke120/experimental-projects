@@ -3,6 +3,7 @@ package app.kumasuke.test.excel;
 import app.kumasuke.excel.CellValue;
 import app.kumasuke.excel.IllegalReaderStateException;
 import app.kumasuke.excel.WorkbookEventReader;
+import app.kumasuke.excel.WorkbookProcessException;
 import app.kumasuke.util.ResourceUtil;
 import app.kumasuke.util.XmlUtil;
 
@@ -46,6 +47,32 @@ abstract class AbstractWorkbookEventReaderTest {
                     assertThrows(IllegalReaderStateException.class, () -> reader.read(handler));
                 }
             });
+        });
+
+        dealWithReader(reader -> {
+            final var handler = new WorkbookEventReader.EventHandler() {
+                @Override
+                public void onHandleCell(int sheetIndex, int rowNum, int columnNum, CellValue cellValue) {
+                    if (Integer.class.equals(cellValue.originalType())) {
+                        // triggers an CellValueCastException
+                        cellValue.localDateValue();
+                    }
+                }
+            };
+
+            assertThrows(WorkbookProcessException.class, () -> reader.read(handler));
+        });
+
+        dealWithReader(reader -> {
+            final var handler = new WorkbookEventReader.EventHandler() {
+                @Override
+                public void onStartDocument() {
+                    reader.read(new WorkbookEventReader.EventHandler() {
+                    });
+                }
+            };
+
+            assertThrows(IllegalReaderStateException.class, () -> reader.read(handler));
         });
     }
 

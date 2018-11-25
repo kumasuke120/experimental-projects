@@ -6,7 +6,6 @@ import app.kumasuke.excel.XSSFWorkbookEventReader;
 import app.kumasuke.util.ResourceUtil;
 
 import java.nio.file.Path;
-import java.util.Objects;
 
 public class MyApplication {
     public static void main(String[] args) {
@@ -67,8 +66,7 @@ public class MyApplication {
 
         @Override
         public void onHandleCell(int sheetIndex, int rowNum, int columnNum, CellValue cellValue) {
-            String cellType = cellValue.isNull() ? "null" :
-                    Objects.requireNonNull(cellValue.originalType()).getSimpleName();
+            String cellType = cellValue.isNull() ? "null" : cellValue.originalType().getSimpleName();
             System.out.printf("== Cell (%d, %d, %d, [%s] %s)%n", sheetIndex, rowNum, columnNum,
                               cellType, cellValue.originalValue());
         }

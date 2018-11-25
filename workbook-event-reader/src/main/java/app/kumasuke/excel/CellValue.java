@@ -82,10 +82,11 @@ public final class CellValue {
     /**
      * Returns type of the original value. It will return <code>null</code> if the original value is <code>null</code>.
      *
-     * @return the type of the original value if possible, otherwise <code>null</code>
+     * @return the type of the original value if possible, otherwise a {@link NullPointerException} will be thrown
+     * @throws NumberFormatException the original value is null
      */
     public Class<?> originalType() {
-        return originalValue == null ? null : originalValue.getClass();
+        return Objects.requireNonNull(originalValue).getClass();
     }
 
     /**
@@ -129,10 +130,19 @@ public final class CellValue {
         } else if (originalValue instanceof Number) {
             return ((Number) originalValue).intValue();
         } else if (originalValue instanceof String) {
+            final String originalString = (String) this.originalValue;
+
             try {
-                return Integer.parseInt((String) originalValue);
-            } catch (NumberFormatException e) {
-                throw new CellValueCastException(e);
+                return Integer.parseInt(originalString);
+            } catch (NumberFormatException e1) {
+                try {
+                    return (int) Double.parseDouble(originalString);
+                } catch (NumberFormatException e2) {
+                    // it will be more reasonable to throw an exception which
+                    // indicates that the conversion to int has failed
+                    e1.addSuppressed(e2);
+                    throw new CellValueCastException(e1);
+                }
             }
         } else {
             throw new CellValueCastException();
@@ -153,31 +163,19 @@ public final class CellValue {
         } else if (originalValue instanceof Number) {
             return ((Number) originalValue).longValue();
         } else if (originalValue instanceof String) {
-            try {
-                return Long.parseLong((String) originalValue);
-            } catch (NumberFormatException e) {
-                throw new CellValueCastException(e);
-            }
-        } else {
-            throw new CellValueCastException();
-        }
-    }
+            final String originalString = (String) this.originalValue;
 
-    /**
-     * Converts the original value to its <code>float</code> counterpart.<br>
-     * The conversion only happens when it's possible.
-     *
-     * @return <code>float</code> version of the original value
-     * @throws CellValueCastException cannot convert the original value to <code>float</code> type
-     */
-    public float floatValue() {
-        if (originalValue instanceof Number) {
-            return ((Number) originalValue).floatValue();
-        } else if (originalValue instanceof String) {
             try {
-                return Float.parseFloat((String) originalValue);
-            } catch (NumberFormatException e) {
-                throw new CellValueCastException(e);
+                return Long.parseLong(originalString);
+            } catch (NumberFormatException e1) {
+                try {
+                    return (long) Double.parseDouble(originalString);
+                } catch (NumberFormatException e2) {
+                    // it will be more reasonable to throw an exception which
+                    // indicates that the conversion to long has failed
+                    e1.addSuppressed(e2);
+                    throw new CellValueCastException(e1);
+                }
             }
         } else {
             throw new CellValueCastException();
@@ -220,7 +218,8 @@ public final class CellValue {
         if (originalValue != null) {
             return String.valueOf(originalValue);
         } else {
-            throw new CellValueCastException();
+            // indicates the originalValue is null
+            throw new CellValueCastException(new NullPointerException());
         }
     }
 
@@ -281,8 +280,10 @@ public final class CellValue {
                 try {
                     return LocalDateTime.from(temporalAccessor).toLocalTime();
                 } catch (DateTimeException e2) {
-                    e2.addSuppressed(e1);
-                    throw new CellValueCastException(e2);
+                    // it will be more reasonable to throw an exception which
+                    // indicates that the conversion to LocalTime has failed
+                    e1.addSuppressed(e2);
+                    throw new CellValueCastException(e1);
                 }
             }
         } else {
@@ -406,8 +407,10 @@ public final class CellValue {
                 try {
                     return LocalDate.from(temporalAccessor).atStartOfDay();
                 } catch (DateTimeException e2) {
-                    e2.addSuppressed(e1);
-                    throw new CellValueCastException(e2);
+                    // it will be more reasonable to throw an exception which
+                    // indicates that the conversion to LocalDateTime has failed
+                    e1.addSuppressed(e2);
+                    throw new CellValueCastException(e1);
                 }
             }
         } else {
@@ -445,14 +448,14 @@ public final class CellValue {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (!(o instanceof CellValue)) return false;
         CellValue cellValue = (CellValue) o;
         return Objects.equals(originalValue, cellValue.originalValue);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(originalValue);
+        return Objects.hashCode(originalValue);
     }
 
     public String toString() {
