@@ -212,7 +212,7 @@ abstract class AbstractWorkbookEventReaderTest {
         @Override
         public void onHandleCell(int sheetIndex, int rowNum, int columnNum, CellValue cellValue) {
             xml.append("<cell javaType=\"")
-                    .append(cellValue.isNull() ? null : cellValue.originalType().getCanonicalName())
+                    .append(cellValue.isNull() ? "null" : cellValue.originalType().getCanonicalName())
                     .append("\" index=\"")
                     .append(columnNum)
                     .append("\">")
