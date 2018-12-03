@@ -235,7 +235,7 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
 
                 assert rowNum == currentRowNum;
                 if (rowNum != -1 && columnNum != -1) {
-                    Object cellValue = getCellValue(localName);
+                    Object cellValue = getCellValue(qName);
                     handler.onHandleCell(currentSheetIndex, currentRowNum, columnNum, new CellValue(cellValue));
                 } else {
                     throw new SAXParseException("Cannot parse row number or column number in tag '" + qName + "'",
@@ -251,7 +251,7 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
                     (isCurrentInlineString && TAG_INLINE_CELL_VALUE.equals(localName));
         }
 
-        private Object getCellValue(String localName) throws SAXParseException {
+        private Object getCellValue(String qName) throws SAXParseException {
             String cellValueStr = currentCellValue.toString();
 
             if (isCurrentError) {
@@ -262,7 +262,7 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
                     sharedStringIndex = Integer.parseInt(cellValueStr);
                 } catch (NumberFormatException e) {
                     throw new SAXParseException(
-                            "Cannot parse shared string index in tag '" + localName + "', " +
+                            "Cannot parse shared string index in tag '" + qName + "', " +
                                     "which should be a int: " + cellValueStr,
                             null, e);
                 }
@@ -280,7 +280,7 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
                 } else if (CELL_VALUE_BOOLEAN_FALSE.equals(cellValueStr)) {
                     cellValue = false;
                 } else {
-                    throw new SAXParseException("Cannot parse boolean value in tag '" + localName + "', " +
+                    throw new SAXParseException("Cannot parse boolean value in tag '" + qName + "', " +
                                                         "which should be 'TRUE' or 'FALSE': " + cellValueStr,
                                                 null);
                 }
