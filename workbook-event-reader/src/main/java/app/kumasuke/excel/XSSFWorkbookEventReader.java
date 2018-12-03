@@ -120,6 +120,7 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
 
     private SAXParser createSAXParser() throws ParserConfigurationException, SAXException {
         final var factory = SAXParserFactory.newInstance();
+        factory.setNamespaceAware(true);
         return factory.newSAXParser();
     }
 
@@ -147,6 +148,7 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
         private static final String TAG_ROW = "row";
         private static final String TAG_CELL = "c";
         private static final String TAG_CELL_VALUE = "v";
+        private static final String TAG_INLINE_CELL_VALUE = "t";
 
         // attribute for TAG_ROW
         private static final String ATTRIBUTE_ROW_REFERENCE = "r";
@@ -158,6 +160,7 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
 
         // attribute values for ATTRIBUTE_CELL_REFERENCE
         private static final String CELL_TYPE_SHARED_STRING = "s";
+        private static final String CELL_TYPE_INLINE_STRING = "inlineStr";
         private static final String CELL_TYPE_BOOLEAN = "b";
         private static final String CELL_TYPE_ERROR = "e";
 
@@ -174,7 +177,9 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
         private StringBuilder currentCellValue;
 
         private boolean isCurrentCellValue = false;
+
         private boolean isCurrentSharedString = false;
+        private boolean isCurrentInlineString = false;
         private boolean isCurrentBoolean = false;
         private boolean isCurrentError = false;
 
@@ -191,17 +196,18 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
                                        String qName, Attributes attributes) throws SAXException {
             cancelReadingWhenNecessary();
 
-            if (TAG_CELL.equals(qName)) {
+            if (TAG_CELL.equals(localName)) {
                 currentCellReference = attributes.getValue(ATTRIBUTE_CELL_REFERENCE);
                 currentCellXfIndex = Util.toInt(attributes.getValue(ATTRIBUTE_CELL_STYLE), -1);
 
                 String cellType = attributes.getValue(ATTRIBUTE_CELL_TYPE);
                 isCurrentSharedString = CELL_TYPE_SHARED_STRING.equals(cellType);
+                isCurrentInlineString = CELL_TYPE_INLINE_STRING.equals(cellType);
                 isCurrentBoolean = CELL_TYPE_BOOLEAN.equals(cellType);
                 isCurrentError = CELL_TYPE_ERROR.equals(cellType);
-            } else if (TAG_CELL_VALUE.equals(qName)) {
+            } else if (isCellValueRelated(localName)) {
                 isCurrentCellValue = true; // indicates cell value starts
-            } else if (TAG_ROW.equals(qName)) {
+            } else if (TAG_ROW.equals(localName)) {
                 try {
                     currentRowNum = Integer.parseInt(attributes.getValue(ATTRIBUTE_ROW_REFERENCE)) - 1;
                 } catch (NumberFormatException e) {
@@ -219,9 +225,9 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
         public final void endElement(String uri, String localName, String qName) throws SAXException {
             cancelReadingWhenNecessary();
 
-            if (TAG_CELL_VALUE.equals(qName)) {
+            if (isCellValueRelated(localName)) {
                 isCurrentCellValue = false; // indicates cell value ends
-            } else if (TAG_CELL.equals(qName)) {
+            } else if (TAG_CELL.equals(localName)) {
                 Map.Entry<Integer, Integer> rowAndColumn = Util.cellReferenceToRowAndColumn(currentCellReference);
 
                 final int rowNum = rowAndColumn.getKey();
@@ -229,18 +235,23 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
 
                 assert rowNum == currentRowNum;
                 if (rowNum != -1 && columnNum != -1) {
-                    Object cellValue = getCellValue(qName);
+                    Object cellValue = getCellValue(localName);
                     handler.onHandleCell(currentSheetIndex, currentRowNum, columnNum, new CellValue(cellValue));
                 } else {
                     throw new SAXParseException("Cannot parse row number or column number in tag '" + qName + "'",
                                                 null);
                 }
-            } else if (TAG_ROW.equals(qName)) {
+            } else if (TAG_ROW.equals(localName)) {
                 handler.onEndRow(currentSheetIndex, currentRowNum);
             }
         }
 
-        private Object getCellValue(String qName) throws SAXParseException {
+        private boolean isCellValueRelated(String localName) {
+            return TAG_CELL_VALUE.equals(localName) ||
+                    (isCurrentInlineString && TAG_INLINE_CELL_VALUE.equals(localName));
+        }
+
+        private Object getCellValue(String localName) throws SAXParseException {
             String cellValueStr = currentCellValue.toString();
 
             if (isCurrentError) {
@@ -251,7 +262,7 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
                     sharedStringIndex = Integer.parseInt(cellValueStr);
                 } catch (NumberFormatException e) {
                     throw new SAXParseException(
-                            "Cannot parse shared string index in tag '" + qName + "', " +
+                            "Cannot parse shared string index in tag '" + localName + "', " +
                                     "which should be a int: " + cellValueStr,
                             null, e);
                 }
@@ -269,7 +280,7 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
                 } else if (CELL_VALUE_BOOLEAN_FALSE.equals(cellValueStr)) {
                     cellValue = false;
                 } else {
-                    throw new SAXParseException("Cannot parse boolean value in tag '" + qName + "', " +
+                    throw new SAXParseException("Cannot parse boolean value in tag '" + localName + "', " +
                                                         "which should be 'TRUE' or 'FALSE': " + cellValueStr,
                                                 null);
                 }
