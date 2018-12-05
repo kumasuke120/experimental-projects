@@ -300,7 +300,7 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
                 cellValue = null;
             } else if (Util.isATextFormat(formatIndex, formatString)) { // deals with cell marked as text
                 cellValue = cellValueStr;
-            } else if (DateUtil.isADateFormat(formatIndex, formatString)) { // deals date format
+            } else if (DateUtil.isADateFormat(formatIndex, formatString)) { // deals with date format
                 double doubleValue;
                 try {
                     doubleValue = Double.parseDouble(cellValueStr);
