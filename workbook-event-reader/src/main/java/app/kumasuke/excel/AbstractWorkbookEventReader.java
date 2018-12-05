@@ -242,8 +242,26 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
             return value % 1 == 0;
         }
 
+
         /**
-         * Tests if the given value is a decimal fraction.
+         * Tests if the given value is a whole number that Java could represents with primitive type.
+         *
+         * @param value <code>String</code> value to be tested
+         * @return <code>true</code> if the given value is a whole number, otherwise <code>false</code>
+         */
+        static boolean isAWholeNumber(String value) {
+            if (value == null) return false;
+
+            try {
+                Long.parseLong(value);
+                return true;
+            } catch (NumberFormatException e) {
+                return false;
+            }
+        }
+
+        /**
+         * Tests if the given value is a decimal fraction that Java could represents with primitive type.
          *
          * @param value <code>String</code> value to be tested
          * @return <code>true</code> if the given value is a decimal fraction, otherwise <code>false</code>
@@ -272,24 +290,6 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
 
             try {
                 return Integer.parseInt(value);
-            } catch (NumberFormatException e) {
-                return defaultValue;
-            }
-        }
-
-        /**
-         * Parses the <code>String</code> value to <code>double</code> silently.<br>
-         * It will return <code>defaultValue</code> if the <code>String</code> value could not be parsed.
-         *
-         * @param value the <code>String</code> value to be parsed
-         * @return parsed <code>double</code> value if parse succeeds, otherwise the <code>defaultValue</code>
-         */
-        @SuppressWarnings("SameParameterValue")
-        static double toDouble(String value, double defaultValue) {
-            if (value == null) return defaultValue;
-
-            try {
-                return Double.parseDouble(value);
             } catch (NumberFormatException e) {
                 return defaultValue;
             }
@@ -344,6 +344,11 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
                     } else {
                         return (int) doubleValue;
                     }
+                }
+            } else if (value instanceof Long) {
+                final var longValue = (long) value;
+                if (longValue >= Integer.MIN_VALUE && longValue <= Integer.MAX_VALUE) {
+                    return (int) longValue;
                 }
             }
 
@@ -400,7 +405,7 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
          */
         static boolean isATextFormat(int formatIndex, String formatString) {
             return formatIndex == 0x31 ||
-                    BuiltinFormats.getBuiltinFormat(formatString) == 0x31;
+                    (formatString != null && BuiltinFormats.getBuiltinFormat(formatString) == 0x31);
         }
     }
 

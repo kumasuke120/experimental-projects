@@ -269,8 +269,6 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
 
                 final RichTextString sharedString = sharedStringsTable.getItemAt(sharedStringIndex);
                 cellValueStr = sharedString.getString();
-
-                isCurrentSharedString = false;
             }
 
             Object cellValue;
@@ -285,38 +283,39 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
                                                 null);
                 }
             } else {
-                cellValue = formatNumberDateCellValue(cellValueStr);
+                cellValue = formatNumberDateCellValue(cellValueStr, qName);
             }
 
             return Util.toRelativeType(cellValue);
         }
 
-        private Object formatNumberDateCellValue(String cellValueStr) {
-            Object cellValue;
+        private Object formatNumberDateCellValue(String cellValueStr, String qName) throws SAXParseException {
+            final Object cellValue;
+
+            // valid numFmtId is non-negative, -1 denotes there is no cell format for the cell
+            final short formatIndex = currentCellXfIndex == -1 ? -1 : getFormatIndex(currentCellXfIndex);
+            final String formatString = currentCellXfIndex == -1 ? null : getFormatString(formatIndex);
 
             if (cellValueStr == null || cellValueStr.isEmpty()) {
                 cellValue = null;
-            } else if (Util.isADecimalFraction(cellValueStr)) {
-                // actually, won't return default value
-                double doubleValue = Util.toDouble(cellValueStr, Double.NaN);
-
-                cellValue = doubleValue;
-                if (currentCellXfIndex != -1) {
-                    final short formatIndex = getFormatIndex(currentCellXfIndex);
-                    final String formatString = getFormatString(formatIndex);
-
-                    if (Util.isATextFormat(formatIndex, formatString)) { // deals with cell marked as text
-                        if (Util.isAWholeNumber(doubleValue)) {
-                            cellValue = Long.toString((long) (doubleValue));
-                        } else {
-                            cellValue = Double.toString(doubleValue);
-                        }
-                    } else if (formatString != null) { // deals with date
-                        if (DateUtil.isADateFormat(formatIndex, formatString)) {
-                            cellValue = Util.toJsr310DateOrTime(doubleValue, use1904Windowing);
-                        }
-                    }
+            } else if (Util.isATextFormat(formatIndex, formatString)) { // deals with cell marked as text
+                cellValue = cellValueStr;
+            } else if (DateUtil.isADateFormat(formatIndex, formatString)) { // deals date format
+                double doubleValue;
+                try {
+                    doubleValue = Double.parseDouble(cellValueStr);
+                } catch (NumberFormatException e) {
+                    throw new SAXParseException("Cannot parse date value in tag '" + qName + "', " +
+                                                        "which should be a double value: " + cellValueStr,
+                                                null);
                 }
+                cellValue = Util.toJsr310DateOrTime(doubleValue, use1904Windowing);
+            } else if (Util.isAWholeNumber(cellValueStr)) { // deals with whole number
+                // will never throw NumberFormatException
+                cellValue = Long.parseLong(cellValueStr);
+            } else if (Util.isADecimalFraction(cellValueStr)) { // deals with decimal fraction
+                // will never throw NumberFormatException
+                cellValue = Double.parseDouble(cellValueStr);
             } else {
                 cellValue = cellValueStr;
             }
@@ -329,14 +328,16 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
             if (cellXf.isSetNumFmtId()) {
                 return (short) cellXf.getNumFmtId();
             } else {
-                // valid numFmtId is non-negative
+                // valid numFmtId is non-negative, -1 denotes invalid value
                 return -1;
             }
         }
 
         private String getFormatString(short numFmtId) {
             String numberFormat = stylesTable.getNumberFormatAt(numFmtId);
-            if (numberFormat == null) numberFormat = BuiltinFormats.getBuiltinFormat(numFmtId);
+            if (numberFormat == null) {
+                numberFormat = BuiltinFormats.getBuiltinFormat(numFmtId);
+            }
             return numberFormat;
         }
 

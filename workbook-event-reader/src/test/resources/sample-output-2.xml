@@ -32,6 +32,7 @@
             <cell javaType="java.lang.String" index="1">The quick brown fox jumps over the lazy dog</cell>
             <cell javaType="java.lang.String" index="2">123</cell>
             <cell javaType="java.lang.String" index="3">1234567890</cell>
+            <cell javaType="java.lang.String" index="4">654321654321654321</cell>
         </row>
         <row index="6">
             <cell javaType="java.lang.String" index="0">Boolean</cell>
