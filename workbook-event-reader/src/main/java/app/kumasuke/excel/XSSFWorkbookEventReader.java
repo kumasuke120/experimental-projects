@@ -283,13 +283,13 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
                                                 null);
                 }
             } else {
-                cellValue = formatNumberDateCellValue(cellValueStr, qName);
+                cellValue = formatNumberDateCellValue(cellValueStr);
             }
 
             return Util.toRelativeType(cellValue);
         }
 
-        private Object formatNumberDateCellValue(String cellValueStr, String qName) throws SAXParseException {
+        private Object formatNumberDateCellValue(String cellValueStr) {
             final Object cellValue;
 
             // valid numFmtId is non-negative, -1 denotes there is no cell format for the cell
@@ -301,15 +301,15 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
             } else if (Util.isATextFormat(formatIndex, formatString)) { // deals with cell marked as text
                 cellValue = cellValueStr;
             } else if (DateUtil.isADateFormat(formatIndex, formatString)) { // deals with date format
-                double doubleValue;
+                Object theValue;
                 try {
-                    doubleValue = Double.parseDouble(cellValueStr);
+                    double doubleValue = Double.parseDouble(cellValueStr);
+                    theValue = Util.toJsr310DateOrTime(doubleValue, use1904Windowing);
                 } catch (NumberFormatException e) {
-                    throw new SAXParseException("Cannot parse date value in tag '" + qName + "', " +
-                                                        "which should be a double value: " + cellValueStr,
-                                                null);
+                    // non-double value in a date format cell, which is tolerable
+                    theValue = cellValueStr;
                 }
-                cellValue = Util.toJsr310DateOrTime(doubleValue, use1904Windowing);
+                cellValue = theValue;
             } else if (Util.isAWholeNumber(cellValueStr)) { // deals with whole number
                 // will never throw NumberFormatException
                 cellValue = Long.parseLong(cellValueStr);
