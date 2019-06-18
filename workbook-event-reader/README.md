@@ -94,9 +94,7 @@ public class ToXmlPrinter {
 
         private void newLine() {
             xml.append(System.lineSeparator());
-            for (int i = 0; i < currentIndentLevel; i++) {
-                xml.append("    "); // four spaces
-            }
+            xml.append(/* four spaces */"    ".repeat(currentIndentLevel));
         }
 
         private void indent() {
