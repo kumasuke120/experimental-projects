@@ -226,6 +226,7 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
      * An utility class that contains various methods for dealing with workbook
      */
     static class Util {
+        private static final double MAX_EXCEL_DATE_EXCLUSIVE = 2958466;
         private static final Pattern cellReferencePattern = Pattern.compile("([A-Z]+)(\\d+)");
 
         private Util() {
@@ -296,6 +297,17 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
         }
 
         /**
+         * Tests if the given value is a valid excel date.
+         *
+         * @param excelDateValue excel date value
+         * @return code>true</code> if the given value is a valid excel date, otherwise <code>false</code>
+         */
+        static boolean isValidExcelDate(double excelDateValue) {
+            return DateUtil.isValidExcelDate(excelDateValue) &&
+                    excelDateValue > 0 && excelDateValue < MAX_EXCEL_DATE_EXCLUSIVE;
+        }
+
+        /**
          * Converts the given excel date value to @{@link LocalTime}, {@link LocalDateTime} or
          * {@link LocalDate} accordingly.
          *
@@ -305,7 +317,7 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
          * @return converted @{@link LocalTime}, {@link LocalDateTime} or {@link LocalDate}
          */
         static Object toJsr310DateOrTime(double excelDateValue, boolean use1904Windowing) {
-            if (DateUtil.isValidExcelDate(excelDateValue)) {
+            if (isValidExcelDate(excelDateValue)) {
                 final Date date = DateUtil.getJavaDate(excelDateValue, use1904Windowing,
                                                        TimeZone.getTimeZone("UTC"));
                 final LocalDateTime localDateTime = toLocalDateTimeOffsetByUTC(date);

@@ -6,6 +6,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -377,13 +378,31 @@ class CellValueTest {
     @Test
     @DisplayName("toString()")
     void _toString() {
-        // test for coverage
-
         final var a = newCellValue(1);
         final var b = newCellValue(null);
 
-        assertEquals("1", a.toString());
-        assertEquals("null", b.toString());
+        assertTrue(a.toString().matches("app\\.kumasuke\\.excel\\.CellValue" +
+                                                "\\{type = java\\.lang\\.Integer, value = 1}" +
+                                                "@[a-z0-9]+"));
+        assertTrue(b.toString().matches("app\\.kumasuke\\.excel\\.CellValue" +
+                                                "\\{value = null}" +
+                                                "@[a-z0-9]+"));
+    }
+
+    @Test
+    void newInstance() {
+        final CellValue a = newCellValueByStaticMethod(null);
+        final CellValue b = newCellValueByStaticMethod(null);
+        final CellValue c = newCellValue(null);
+
+        assertNotNull(a);
+        assertNotNull(b);
+        assertNotNull(c);
+
+        assertSame(a, b);
+        assertSame(a, CellValue.NULL);
+        assertNotSame(a, c);
+        assertNotSame(c, CellValue.NULL);
     }
 
     private CellValue newCellValue(Object originalValue) {
@@ -391,6 +410,17 @@ class CellValueTest {
             final Constructor<CellValue> constructor = CellValue.class.getDeclaredConstructor(Object.class);
             constructor.setAccessible(true);
             return constructor.newInstance(originalValue);
+        } catch (ReflectiveOperationException e) {
+            throw new AssertionError(e);
+        }
+    }
+
+    @SuppressWarnings("SameParameterValue")
+    private CellValue newCellValueByStaticMethod(Object originalValue) {
+        try {
+            final Method method = CellValue.class.getDeclaredMethod("newInstance", Object.class);
+            method.setAccessible(true);
+            return (CellValue) method.invoke(null, originalValue);
         } catch (ReflectiveOperationException e) {
             throw new AssertionError(e);
         }

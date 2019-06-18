@@ -317,7 +317,8 @@ public class HSSFWorkbookEventReader extends AbstractWorkbookEventReader {
             }
 
             cellValue = Util.toRelativeType(cellValue);
-            handler.onHandleCell(currentSheetIndex, rowNum, columnNum, new CellValue(cellValue));
+            handler.onHandleCell(currentSheetIndex, rowNum, columnNum,
+                                 CellValue.newInstance(cellValue));
 
             if (currentRowEndColumnNum == columnNum) {
                 handleEndRow(currentRowNumber);

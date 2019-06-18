@@ -236,7 +236,8 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
                 assert rowNum == currentRowNum;
                 if (rowNum != -1 && columnNum != -1) {
                     Object cellValue = getCellValue(qName);
-                    handler.onHandleCell(currentSheetIndex, currentRowNum, columnNum, new CellValue(cellValue));
+                    handler.onHandleCell(currentSheetIndex, currentRowNum, columnNum,
+                                         CellValue.newInstance(cellValue));
                 } else {
                     throw new SAXParseException("Cannot parse row number or column number in tag '" + qName + "'",
                                                 null);
@@ -304,7 +305,12 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
                 Object theValue;
                 try {
                     double doubleValue = Double.parseDouble(cellValueStr);
-                    theValue = Util.toJsr310DateOrTime(doubleValue, use1904Windowing);
+                    if (Util.isValidExcelDate(doubleValue)) {
+                        theValue = Util.toJsr310DateOrTime(doubleValue, use1904Windowing);
+                    } else {
+                        // treats invalid value as text
+                        theValue = cellValueStr;
+                    }
                 } catch (NumberFormatException e) {
                     // non-double value in a date format cell, which is tolerable
                     theValue = cellValueStr;

@@ -33,6 +33,8 @@ public class ResourceUtil {
         final var buffer = new char[bufferSize];
         final var builder = new StringBuilder();
         try (final InputStream is = ClassLoader.getSystemResourceAsStream(resourceName)) {
+            assert is != null;
+
             try (final var isr = new InputStreamReader(is, StandardCharsets.UTF_8)) {
                 int nChars;
 

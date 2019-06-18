@@ -1,5 +1,6 @@
 package app.kumasuke.excel;
 
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.time.DateTimeException;
@@ -19,6 +20,11 @@ import java.util.Set;
  * provides convenient ways to convert between them
  */
 public final class CellValue {
+    /**
+     * A <code>CellValue</code> singleton whose value is <code>null</code>
+     */
+    public static final CellValue NULL = new CellValue(null);
+
     private static final Set<DateTimeFormatter> DEFAULT_DATE_TIME_FORMATTERS;
 
     static {
@@ -44,7 +50,7 @@ public final class CellValue {
 
     private final Object originalValue;
 
-    CellValue(Object originalValue) {
+    private CellValue(Object originalValue) {
         assert originalValue == null ||
                 originalValue instanceof Boolean ||
                 originalValue instanceof Integer ||
@@ -56,6 +62,21 @@ public final class CellValue {
                 originalValue instanceof LocalDateTime;
 
         this.originalValue = originalValue;
+    }
+
+    /**
+     * Returns a <code>CellValue</code> based on given value.<br>
+     * If the given value is <code>null</code>, it will always return {@link #NULL}.
+     *
+     * @param originalValue the given value
+     * @return an instance of <code>CellValue</code>
+     */
+    static CellValue newInstance(Object originalValue) {
+        if (originalValue == null) {
+            return NULL;
+        } else {
+            return new CellValue(originalValue);
+        }
     }
 
     /**
@@ -458,7 +479,29 @@ public final class CellValue {
         return Objects.hashCode(originalValue);
     }
 
+    /**
+     * Returns the string representation of the <code>CellValue</code>.<br>
+     * This result string will follow this form:
+     * <pre><code>
+     * getClass().getName() +
+     * "{" +
+     * (isNull() ? "" : "type = <i>value type</i>, ") +
+     * "value = <i>value</i>" +
+     * "}" +
+     * "@" + Integer.toHexString(System.identityHashCode(this))
+     * </code></pre>
+     * The form aforementioned may not be holden in future. One should not
+     * use its value to extract information.
+     *
+     * @return a string representation of the <code>CellValue</code>
+     */
+    @Override
     public String toString() {
-        return String.valueOf(originalValue);
+        return getClass().getName() +
+                "{" +
+                (isNull() ? "" : "type = " + originalType().getCanonicalName() + ", ") +
+                "value = " + originalValue() +
+                "}" +
+                "@" + Integer.toHexString(System.identityHashCode(this));
     }
 }
