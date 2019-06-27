@@ -184,7 +184,8 @@ public class HSSFWorkbookEventReader extends AbstractWorkbookEventReader {
                 case FormulaRecord.sid: {
                     final var formula = (FormulaRecord) record;
 
-                    @SuppressWarnings("deprecation") final CellType resultType = CellType.forInt(formula.getCachedResultType());
+                    @SuppressWarnings("deprecation") final CellType resultType =
+                            CellType.forInt(formula.getCachedResultType());
                     switch (resultType) {
                         case NUMERIC: {
                             final Object cellValue = formatNumberDateCell(formula);
@@ -285,21 +286,23 @@ public class HSSFWorkbookEventReader extends AbstractWorkbookEventReader {
             final String formatString = formatTracker.getFormatString(cellRecord);
 
             if (formatString != null) {
+                boolean returnAsString = false;
+
                 if (Util.isATextFormat(formatIndex, formatString)) { // deals with cell marked as text
-                    if (Util.isAWholeNumber(value)) {
-                        return Long.toString((long) (value));
-                    } else {
-                        return Double.toString(value);
-                    }
+                    returnAsString = true;
                 } else if (DateUtil.isADateFormat(formatIndex, formatString)) { // deals with date
                     if (Util.isValidExcelDate(value)) {
                         return Util.toJsr310DateOrTime(value, use1904Windowing);
                     } else {
-                        if (Util.isAWholeNumber(value)) {
-                            return Long.toString((long) (value));
-                        } else {
-                            return Double.toString(value);
-                        }
+                        returnAsString = true;
+                    }
+                }
+
+                if (returnAsString) {
+                    if (Util.isAWholeNumber(value)) {
+                        return Long.toString((long) (value));
+                    } else {
+                        return Double.toString(value);
                     }
                 }
             }

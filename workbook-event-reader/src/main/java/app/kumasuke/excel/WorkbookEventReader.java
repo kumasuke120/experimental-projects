@@ -147,7 +147,6 @@ public interface WorkbookEventReader extends Closeable {
          * <td>string value, or value from a cell that marked as text</td>
          * </tr>
          * <tr>
-         * <tr>
          * <td>{@link LocalTime}</td>
          * <td>time value whose containing cell is a non-text cell</td>
          * </tr>
