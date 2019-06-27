@@ -4,7 +4,7 @@ import app.kumasuke.excel.HSSFWorkbookEventReader;
 import app.kumasuke.excel.WorkbookEventReader;
 import app.kumasuke.excel.WorkbookIOException;
 import app.kumasuke.excel.XSSFWorkbookEventReader;
-import app.kumasuke.util.ResourceUtil;
+import app.kumasuke.test.util.ResourceUtil;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;

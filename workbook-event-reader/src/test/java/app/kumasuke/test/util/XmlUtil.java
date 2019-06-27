@@ -1,4 +1,4 @@
-package app.kumasuke.util;
+package app.kumasuke.test.util;
 
 import nu.xom.*;
 
@@ -29,18 +29,21 @@ public class XmlUtil {
         final String bQN = bElement.getQualifiedName();
 
         if (!Objects.equals(aQN, bQN)) {
+            System.err.println("Element qualified name: " + aQN + " != " + bQN);
             return false;
         } else {
             final int aAttrCount = aElement.getAttributeCount();
             final int bAttrCount = bElement.getAttributeCount();
 
             if (aAttrCount != bAttrCount) {
+                System.err.println("Element attribute count <" + aQN + "> : " + aAttrCount + " != " + bAttrCount);
                 return false;
             } else {
                 final Map<String, String> aAttrs = extractAttributes(aElement);
                 final Map<String, String> bAttrs = extractAttributes(bElement);
 
                 if (!Objects.equals(aAttrs, bAttrs)) {
+                    System.err.println("Element attribute(s) <" + aQN + "> : " + aAttrs + " != " + bAttrs);
                     return false;
                 }
 
@@ -48,14 +51,30 @@ public class XmlUtil {
                 final int bChildCount = aElement.getChildCount();
 
                 if (aChildCount != bChildCount) {
+                    System.err.println("Element child count <" + aQN + "> : " + aChildCount + " != " + bChildCount);
                     return false;
-                } else if (aChildCount == 0) {
-                    return Objects.equals(aElement.getValue(), bElement.getValue());
-                } else {
+                } else if (aChildCount > 0) {
+                    if (aChildCount == 1) {
+                        final Node aChild = aElement.getChild(0);
+                        final Node bChild = bElement.getChild(0);
+
+                        if (aChild instanceof Text && bChild instanceof Text) {
+                            final String aValue = aElement.getValue();
+                            final String bValue = bElement.getValue();
+                            final boolean valueEquals = Objects.equals(aValue, bValue);
+                            if (!valueEquals) {
+                                System.err.println("Element child value <" + aQN + "> : " + aValue + " != " + bValue);
+                            }
+                            return valueEquals;
+                        }
+                    }
+
                     final Map<String, List<Element>> aChildElements = extractChildElements(aElement);
                     final Map<String, List<Element>> bChildElements = extractChildElements(bElement);
 
                     if (aChildElements.size() != bChildElements.size()) {
+                        System.err.println("Element child count <" + aQN + "> : " +
+                                                   aChildElements.size() + " != " + bChildElements.size());
                         return false;
                     }
 
@@ -63,7 +82,18 @@ public class XmlUtil {
                         final List<Element> aElements = aChildElements.get(name);
                         final List<Element> bElements = bChildElements.get(name);
 
-                        if (bElements == null || aElements.size() != bElements.size()) {
+                        final int aElementsSize = aElements.size();
+                        final int bElementsSize = bElements == null ? 0 : bElements.size();
+                        if (aElementsSize != bElementsSize) {
+                            System.err.println("Child element count <" + name + "> : " +
+                                                       aElementsSize + " != " + bElementsSize +
+                                                       System.lineSeparator() +
+                                                       "=".repeat(80) + System.lineSeparator() +
+                                                       aElement.toXML() + System.lineSeparator() +
+                                                       "-".repeat(80) + System.lineSeparator() +
+                                                       bElement.toXML() +
+                                                       System.lineSeparator() +
+                                                       "=".repeat(80));
                             return false;
                         }
 

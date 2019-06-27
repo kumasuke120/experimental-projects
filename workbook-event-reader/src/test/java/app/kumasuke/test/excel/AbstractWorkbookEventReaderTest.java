@@ -4,8 +4,8 @@ import app.kumasuke.excel.CellValue;
 import app.kumasuke.excel.IllegalReaderStateException;
 import app.kumasuke.excel.WorkbookEventReader;
 import app.kumasuke.excel.WorkbookProcessException;
-import app.kumasuke.util.ResourceUtil;
-import app.kumasuke.util.XmlUtil;
+import app.kumasuke.test.util.ResourceUtil;
+import app.kumasuke.test.util.XmlUtil;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -211,6 +211,9 @@ abstract class AbstractWorkbookEventReaderTest {
 
         @Override
         public void onHandleCell(int sheetIndex, int rowNum, int columnNum, CellValue cellValue) {
+            // run for coverage
+            WorkbookEventReader.EventHandler.super.onHandleCell(sheetIndex, rowNum, columnNum, cellValue);
+
             xml.append("<cell javaType=\"")
                     .append(cellValue.isNull() ? "null" : cellValue.originalType().getCanonicalName())
                     .append("\" index=\"")

@@ -1,4 +1,4 @@
-package app.kumasuke.util;
+package app.kumasuke.test.util;
 
 import java.io.IOException;
 import java.io.InputStream;

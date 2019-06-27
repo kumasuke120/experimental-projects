@@ -400,9 +400,9 @@ class CellValueTest {
         assertNotNull(c);
 
         assertSame(a, b);
-        assertSame(a, CellValue.NULL);
+        assertSame(a, newCellValueByStaticMethod(null));
         assertNotSame(a, c);
-        assertNotSame(c, CellValue.NULL);
+        assertNotSame(c, newCellValueByStaticMethod(null));
     }
 
     private CellValue newCellValue(Object originalValue) {

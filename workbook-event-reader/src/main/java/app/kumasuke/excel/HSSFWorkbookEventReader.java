@@ -18,7 +18,7 @@ import java.util.Map;
 
 /**
  * A {@link WorkbookEventReader} reads a legacy workbook (Excel 97 - 2003) whose file extension
- * usually is <code>xlsx</code>
+ * usually is <code>xls</code>
  */
 public class HSSFWorkbookEventReader extends AbstractWorkbookEventReader {
     private InputStream fileIs;
@@ -292,7 +292,15 @@ public class HSSFWorkbookEventReader extends AbstractWorkbookEventReader {
                         return Double.toString(value);
                     }
                 } else if (DateUtil.isADateFormat(formatIndex, formatString)) { // deals with date
-                    return Util.toJsr310DateOrTime(value, use1904Windowing);
+                    if (Util.isValidExcelDate(value)) {
+                        return Util.toJsr310DateOrTime(value, use1904Windowing);
+                    } else {
+                        if (Util.isAWholeNumber(value)) {
+                            return Long.toString((long) (value));
+                        } else {
+                            return Double.toString(value);
+                        }
+                    }
                 }
             }
 

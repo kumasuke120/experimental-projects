@@ -3,7 +3,7 @@ package app.kumasuke.demo;
 import app.kumasuke.excel.CellValue;
 import app.kumasuke.excel.WorkbookEventReader;
 import app.kumasuke.excel.XSSFWorkbookEventReader;
-import app.kumasuke.util.ResourceUtil;
+import app.kumasuke.test.util.ResourceUtil;
 
 import java.nio.file.Path;
 

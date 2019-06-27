@@ -23,8 +23,12 @@ public final class CellValue {
     /**
      * A <code>CellValue</code> singleton whose value is <code>null</code>
      */
-    public static final CellValue NULL = new CellValue(null);
+    private static final CellValue NULL = new CellValue(null);
 
+    /**
+     * The default <code>DateTimeFormatter</code>s that will be used when converting <code>String</code>
+     * to <code>LocalTime</code>, <code>LocalDate</code>, <code>LocalDateTime</code>
+     */
     private static final Set<DateTimeFormatter> DEFAULT_DATE_TIME_FORMATTERS;
 
     static {
@@ -40,7 +44,7 @@ public final class CellValue {
                     final DateTimeFormatter f = (DateTimeFormatter) field.get(null);
                     formatters.add(f);
                 } catch (IllegalAccessException e) {
-                    throw new RuntimeException(e);
+                    throw new AssertionError(e);
                 }
             }
         }
@@ -104,7 +108,7 @@ public final class CellValue {
      * Returns type of the original value. It will return <code>null</code> if the original value is <code>null</code>.
      *
      * @return the type of the original value if possible, otherwise a {@link NullPointerException} will be thrown
-     * @throws NumberFormatException the original value is null
+     * @throws NullPointerException the original value is null
      */
     public Class<?> originalType() {
         return Objects.requireNonNull(originalValue).getClass();

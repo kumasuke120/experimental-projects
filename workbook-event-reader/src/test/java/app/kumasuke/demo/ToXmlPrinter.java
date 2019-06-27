@@ -2,13 +2,13 @@ package app.kumasuke.demo;
 
 import app.kumasuke.excel.CellValue;
 import app.kumasuke.excel.WorkbookEventReader;
-import app.kumasuke.util.ResourceUtil;
+import app.kumasuke.test.util.ResourceUtil;
 
 import java.nio.file.Path;
 
 public class ToXmlPrinter {
     public static void main(String[] args) {
-        final Path filePath = ResourceUtil.getPathOfClasspathResource("workbook.xlsx");
+        final Path filePath = ResourceUtil.getPathOfClasspathResource("workbook.xls");
         final XmlGenerator xmlGenerator = new XmlGenerator();
         try (final var reader = WorkbookEventReader.open(filePath)) {
             reader.read(xmlGenerator);
@@ -88,9 +88,14 @@ public class ToXmlPrinter {
                     .append(columnNum)
                     .append("\" javaType=\"")
                     .append(cellValue.isNull() ? "null" : cellValue.originalType().getCanonicalName())
-                    .append("\">")
-                    .append(cellValue.isNull() ? "" : cellValue.originalValue())
-                    .append("</cell>");
+                    .append("\"");
+            if (cellValue.isNull()) {
+                xml.append("/>");
+            } else {
+                xml.append(">")
+                        .append(cellValue.isNull() ? "" : cellValue.originalValue())
+                        .append("</cell>");
+            }
         }
 
         private void newLine() {
