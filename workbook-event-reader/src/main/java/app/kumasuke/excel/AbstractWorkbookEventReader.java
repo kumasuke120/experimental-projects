@@ -370,10 +370,10 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
         /**
          * Converts excel cell reference (e.g. A1) to a {@link Map.Entry} containing row number (starts with 0)
          * and column number (starts with 0).<br>
-         * The row and column numbers will both be <code>-1</code> if either of them cannot be parse correctly.
+         * It will return <code>null</code> if either of them cannot be parse correctly.
          *
          * @param cellReference excel cell reference
-         * @return row number and column number, both starts with 0
+         * @return row number and column number, both starts with 0 or <code>null</code>
          */
         static Map.Entry<Integer, Integer> cellReferenceToRowAndColumn(String cellReference) {
             assert cellReference != null;
@@ -388,7 +388,7 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
 
                 return Map.entry(rowNum, columnNum);
             } else {
-                return Map.entry(-1, -1);
+                return null;
             }
         }
 
