@@ -193,22 +193,29 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
                                        String qName, Attributes attributes) throws SAXException {
             cancelReadingWhenNecessary();
 
-            if (TAG_CELL.equals(localName)) {
-                currentCellReference = attributes.getValue(ATTRIBUTE_CELL_REFERENCE);
-                currentCellXfIndex = Util.toInt(attributes.getValue(ATTRIBUTE_CELL_STYLE), -1);
-                currentCellType = attributes.getValue(ATTRIBUTE_CELL_TYPE);
-            } else if (isCellValueRelated(localName)) {
+            switch (localName) {
+                case TAG_CELL: {
+                    currentCellReference = attributes.getValue(ATTRIBUTE_CELL_REFERENCE);
+                    currentCellXfIndex = Util.toInt(attributes.getValue(ATTRIBUTE_CELL_STYLE), -1);
+                    currentCellType = attributes.getValue(ATTRIBUTE_CELL_TYPE);
+                    break;
+                }
+                case TAG_ROW: {
+                    try {
+                        currentRowNum = Integer.parseInt(attributes.getValue(ATTRIBUTE_ROW_REFERENCE)) - 1;
+                    } catch (NumberFormatException e) {
+                        throw new SAXParseException("Cannot parse row number in tag '" + qName + "'",
+                                                    null, e);
+                    }
+
+                    handler.onStartRow(currentSheetIndex, currentRowNum);
+                    break;
+                }
+            }
+
+            if (isCellValueRelated(localName)) {
                 isCurrentCellValue = true; // indicates cell value starts
                 currentCellValueBuilder.setLength(0);
-            } else if (TAG_ROW.equals(localName)) {
-                try {
-                    currentRowNum = Integer.parseInt(attributes.getValue(ATTRIBUTE_ROW_REFERENCE)) - 1;
-                } catch (NumberFormatException e) {
-                    throw new SAXParseException("Cannot parse row number in tag '" + qName + "'",
-                                                null, e);
-                }
-
-                handler.onStartRow(currentSheetIndex, currentRowNum);
             }
         }
 
@@ -216,28 +223,37 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
         public final void endElement(String uri, String localName, String qName) throws SAXException {
             cancelReadingWhenNecessary();
 
+            switch (localName) {
+                case TAG_CELL: {
+                    final Map.Entry<Integer, Integer> rowAndColumn =
+                            Util.cellReferenceToRowAndColumn(currentCellReference);
+
+                    if (rowAndColumn == null) {
+                        throw new SAXParseException(
+                                "Cannot parse row number or column number in tag '" + qName + "'", null);
+                    }
+
+                    final int rowNum = rowAndColumn.getKey();
+                    final int columnNum = rowAndColumn.getValue();
+
+                    assert rowNum == currentRowNum;
+                    final Object cellValue = getCellValue(qName);
+                    handler.onHandleCell(currentSheetIndex, currentRowNum, columnNum,
+                                         CellValue.newInstance(cellValue));
+
+                    // clear its content after processing
+                    currentCellValueBuilder.setLength(0);
+                    currentCellType = null;
+                    break;
+                }
+                case TAG_ROW: {
+                    handler.onEndRow(currentSheetIndex, currentRowNum);
+                    break;
+                }
+            }
+
             if (isCellValueRelated(localName)) {
                 isCurrentCellValue = false; // indicates cell value ends
-            } else if (TAG_CELL.equals(localName)) {
-                final Map.Entry<Integer, Integer> rowAndColumn =
-                        Util.cellReferenceToRowAndColumn(currentCellReference);
-
-                if (rowAndColumn == null) {
-                    throw new SAXParseException("Cannot parse row number or column number in tag '" + qName + "'",
-                                                null);
-                }
-
-                final int rowNum = rowAndColumn.getKey();
-                final int columnNum = rowAndColumn.getValue();
-
-                assert rowNum == currentRowNum;
-                final Object cellValue = getCellValue(qName);
-                handler.onHandleCell(currentSheetIndex, currentRowNum, columnNum, CellValue.newInstance(cellValue));
-
-                // clear its content after processing
-                currentCellValueBuilder.setLength(0);
-            } else if (TAG_ROW.equals(localName)) {
-                handler.onEndRow(currentSheetIndex, currentRowNum);
             }
         }
 
@@ -324,10 +340,10 @@ public class XSSFWorkbookEventReader extends AbstractWorkbookEventReader {
                     theValue = stringCellValue;
                 }
                 cellValue = theValue;
-            } else if (Util.isAWholeNumber(stringCellValue)) { // deals with whole number
+            } else if (Util.isValidExcelInteger(stringCellValue)) { // deals with whole number
                 // will never throw NumberFormatException
                 cellValue = Long.parseLong(stringCellValue);
-            } else if (Util.isADecimalFraction(stringCellValue)) { // deals with decimal fraction
+            } else if (Util.isValidExcelNumber(stringCellValue)) { // deals with decimal fraction
                 // will never throw NumberFormatException
                 cellValue = Double.parseDouble(stringCellValue);
             } else {

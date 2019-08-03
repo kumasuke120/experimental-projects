@@ -13,6 +13,8 @@
             <cell index="1" javaType="java.lang.Double">9.9</cell>
             <cell index="2" javaType="java.lang.Double">-0.5555555555555556</cell>
             <cell index="3" javaType="java.lang.Integer">0</cell>
+            <cell index="4" javaType="java.lang.Double">1.23456789012345E-4</cell>
+            <cell index="5" javaType="java.lang.Double">222.222222222222</cell>
         </row>
         <row index="2">
             <cell index="0" javaType="java.lang.String">LocalTime</cell>
@@ -33,6 +35,8 @@
             <cell index="2" javaType="java.lang.String">123</cell>
             <cell index="3" javaType="java.lang.String">1234567890</cell>
             <cell index="4" javaType="java.lang.String">654321654321654321</cell>
+            <cell index="5" javaType="java.lang.String">123456789012345678</cell>
+            <cell index="6" javaType="java.lang.String">123456789  </cell>
         </row>
         <row index="6">
             <cell index="0" javaType="java.lang.String">Boolean</cell>
