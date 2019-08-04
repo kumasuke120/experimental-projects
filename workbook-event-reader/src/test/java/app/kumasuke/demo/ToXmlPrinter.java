@@ -5,9 +5,12 @@ import app.kumasuke.excel.WorkbookEventReader;
 import app.kumasuke.test.util.ResourceUtil;
 
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class ToXmlPrinter {
     public static void main(String[] args) {
+        System.out.println(Double.parseDouble("1234567890123449921"));
+
         final Path filePath = ResourceUtil.getPathOfClasspathResource("workbook.xls");
         final XmlGenerator xmlGenerator = new XmlGenerator();
         try (final var reader = WorkbookEventReader.open(filePath)) {

@@ -37,7 +37,7 @@ public interface WorkbookEventReader extends Closeable {
 
     /**
      * Cancels reading process that is currently performing as soon as possible.<br>
-     * It cannot cancel the process immediately, but it will cancel before next event's happening.
+     * It cannot cancel the process immediately, but it will cancel the process before next event's happening.
      *
      * @throws IllegalReaderStateException this {@link WorkbookEventReader} has been closed;
      *                                     called not during reading process

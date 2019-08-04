@@ -70,7 +70,7 @@ public final class CellValue {
 
     /**
      * Returns a <code>CellValue</code> based on given value.<br>
-     * If the given value is <code>null</code>, it will always return {@link #NULL}.
+     * If the given value is <code>null</code>, it will always return the same instance.
      *
      * @param originalValue the given value
      * @return an instance of <code>CellValue</code>

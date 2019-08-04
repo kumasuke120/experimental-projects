@@ -4,6 +4,8 @@ import org.apache.poi.ss.usermodel.BuiltinFormats;
 import org.apache.poi.ss.usermodel.DateUtil;
 
 import java.lang.ref.Cleaner;
+import java.math.BigDecimal;
+import java.math.MathContext;
 import java.nio.file.Path;
 import java.time.*;
 import java.util.Date;
@@ -15,7 +17,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * The base class for {@link WorkbookEventReader}, which containing common methods and utilities
+ * The base class for {@link WorkbookEventReader}, containing common methods and utilities
  */
 abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
     private static final Cleaner cleaner = Cleaner.create();
@@ -228,14 +230,6 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
     static class Util {
         private static final double MAX_EXCEL_DATE_EXCLUSIVE = 2958466;
         private static final Pattern cellReferencePattern = Pattern.compile("([A-Z]+)(\\d+)");
-        private static final Pattern excelNumberPattern = Pattern.compile(
-                "(?ix)                                              \n" +
-                        "-?                         # sign mark     \n" +
-                        "(?<integer>\\d|[1-9]\\d+)  # integer part  \n" +
-                        "(?:\\.                     # decimal point \n" +
-                        "(?<decimal>\\d+)           # decimal part  \n" +
-                        ")?                                         \n" +
-                        "(?:E[-+]\\d+)?             # expontent");
 
         private Util() {
             throw new UnsupportedOperationException();
@@ -252,79 +246,37 @@ abstract class AbstractWorkbookEventReader implements WorkbookEventReader {
         }
 
         /**
-         * Tests if the given value is an integer that both Java and excel could represent.
+         * Tests if the given value is a whole number that Java could represent with primitive type.
          *
          * @param value <code>String</code> value to be tested
-         * @return <code>true</code> if the given value is a valid whole number, otherwise <code>false</code>
+         * @return <code>true</code> if the given value is a whole number, otherwise <code>false</code>
          */
-        static boolean isValidExcelInteger(String value) {
-            final int[] counts = getCountsOfSignificantFigures(value);
-            if (counts.length == 2) {
-                // maximum number of significant figures is 15, which refers to: https://bit.ly/2yxKeEg
-                // for integer, integer of maximum 15 digits and no decimal part
-                return counts[0] <= 15 && counts[1] == 0;
-            } else {
+        static boolean isAWholeNumber(String value) {
+            if (value == null) return false;
+
+            try {
+                Long.parseLong(value);
+                return true;
+            } catch (NumberFormatException e) {
                 return false;
             }
         }
 
         /**
-         * Tests if the given value is a number that both Java and excel could represent.
+         * Tests if the given value is a decimal fraction that Java could represent with primitive type.
          *
          * @param value <code>String</code> value to be tested
-         * @return <code>true</code> if the given value is a valid number, otherwise <code>false</code>
+         * @return <code>true</code> if the given value is a decimal fraction, otherwise <code>false</code>
          */
-        static boolean isValidExcelNumber(String value) {
-            final int[] counts = getCountsOfSignificantFigures(value);
-            if (counts.length == 2) {
-                // maximum number of significant figures is 15, which refers to: https://bit.ly/2yxKeEg
-                // for integer, maximum 15 digits before decimal point and no decimal part
-                // for double, there are 2 extra digits for accuracy
-                return counts[0] <= 15 && counts[1] == 0 ||   // integer
-                        counts[0] + counts[1] <= 17;          // double
-            } else {
+        static boolean isADecimalFraction(String value) {
+            if (value == null) return false;
+
+            try {
+                Double.parseDouble(value);
+                return true;
+            } catch (NumberFormatException e) {
                 return false;
             }
-        }
-
-        // the length of returned array is either 0 or 2
-        // index 0 is the count of integer part
-        // index 1 is the count of decimal part
-        private static int[] getCountsOfSignificantFigures(String value) {
-            if (value != null) {
-                final Matcher matcher = excelNumberPattern.matcher(value);
-                if (matcher.matches()) {
-                    final String integerPart = matcher.group("integer");
-                    final String decimalPart = matcher.group("decimal");
-
-                    final int integerSigCount = getCountOfSignificantFigures(integerPart);
-                    final int decimalSigCount;
-                    if (integerSigCount == 0) {
-                        decimalSigCount = getCountOfSignificantFigures(decimalPart);
-                    } else {
-                        decimalSigCount = decimalPart == null ? 0 : decimalPart.length();
-                    }
-
-                    return new int[]{integerSigCount, decimalSigCount};
-                }
-            }
-
-            return new int[0];
-        }
-
-        private static int getCountOfSignificantFigures(String wholeNumber) {
-            if (wholeNumber == null) return 0;
-
-            int firstNonZeroIndex = wholeNumber.length();
-            for (int i = 0; i < wholeNumber.length(); i++) {
-                final char c = wholeNumber.charAt(i);
-                if (c > '0' && c <= '9') {
-                    firstNonZeroIndex = i;
-                    break;
-                }
-            }
-
-            return wholeNumber.length() - firstNonZeroIndex;
         }
 
         /**
