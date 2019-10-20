@@ -1,0 +1,99 @@
+﻿<!--
+  Mosaic Grids
+  
+  author:           Kumasuke (bearcomingx@gmail.com)
+  compatibility:    IE 7+ and any other modern browser
+  date:             01/29/2016
+  -->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Mosaic Grids</title>
+<style type="text/css">
+.color-preview {
+    width: 10px;
+    height: 10px;
+    border: 1px solid #000;
+    display: inline-block;
+    margin-left: 5px;
+}
+.grids span {
+    display: inline-block;
+    cursor: pointer;
+}
+</style>
+</head>
+
+<body>
+  <div id="canvas" style="margin-bottom: 12px;"></div>
+  Numbers of grids per row / column: <input type="text" id="count" value="9" /><br />
+  Width and Height of a grid: <input type="text" id="width" value="50" /> px <br />
+  Foreground Color of grids: 
+  <input type="text" id="foreColor" value="#000" onchange="previewColor(this, 'forePrew')" /><span id="forePrew" class="color-preview"></span><br />
+  Background Color of grids: 
+  <input type="text" id="backColor" value="#fff" onchange="previewColor(this, 'backPrew')" /><span id="backPrew" class="color-preview"></span><br />
+    <button type="button" onclick="drawIt(parseInt($('count').value), parseInt($('width').value), $('foreColor').value, $('backColor').value)">Draw</button>
+  <button type="button" onclick="clearCanavas()" id="clearBtn">Clear</button>
+  <input type="checkbox" id="autoClear" onclick="$('clearBtn').disabled=this.checked" checked /><label for="autoClear">Automatic Clear</label>
+  <input type="checkbox" id="inverseColor"/><label for="inverseColor">Inverse Color</label>
+</body>
+
+<script type="text/javascript">
+    var gridColorState;
+    var foreColor, backColor;
+    document.body.onload = function() {
+        previewColor($('foreColor'), 'forePrew');
+        previewColor($('backColor'), 'backPrew');
+        drawIt(parseInt($('count').value), parseInt($('width').value), $('foreColor').value, $('backColor').value);
+        $('clearBtn').disabled=$('autoClear').checked;
+    }
+    function $(id) {
+        return document.getElementById(id);
+    }
+    function drawIt(count, width, fColor, bColor) {
+        if ($('autoClear').checked)
+            clearCanavas();
+        var content = "";
+        gridColorState = new Array(count);
+        foreColor = fColor;
+        backColor = bColor;
+        content += "<div style=\"border: 1px solid "+ foreColor + "; width: " + (count*width) + "px; height: " + (count*width) + "px;\" class=\"grids\">";
+        for (var i = 0; i < count; i++) {
+            content += "<div>";
+            gridColorState[i] = new Array(count);
+            for (var j = 0; j < count; j++) {
+                var isForeground = ((i + count) % 2 == j % 2);
+                if ($('inverseColor').checked)
+                    isForeground = !isForeground;
+                gridColorState[i][j] = isForeground;
+                if (isForeground)
+                    content += "<span style=\"background-color: "+ foreColor +"; width: " + width + "px; height: " + width + "px\" onclick=\"changeGridBgColor(this, "+ i +", " + j + ");\"></span>";
+                else
+                    content += "<span style=\"background-color: "+ backColor +"; width: " + width + "px; height: " + width + "px\" onclick=\"changeGridBgColor(this, "+ i +", " + j + ");\"></span>";
+                }
+                content += "</div>";
+            }
+        content += "</div>";
+        drawToCanavas(content);
+    }
+    function clearCanavas() {
+        $("canvas").innerHTML = "";
+    }
+    function drawToCanavas(content) {
+        $("canvas").innerHTML += content;
+    }
+    function previewColor(input, outputId) {
+        $(outputId).style.backgroundColor = input.value;
+    }
+    function changeGridBgColor(grid, i, j) {
+        var isForeground = gridColorState[i][j];
+        if (isForeground)
+            grid.style.backgroundColor = backColor;
+        else
+            grid.style.backgroundColor = foreColor;
+        gridColorState[i][j] = !gridColorState[i][j];
+    }
+</script>
+</html>
