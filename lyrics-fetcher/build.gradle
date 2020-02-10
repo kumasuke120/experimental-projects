@@ -1,0 +1,16 @@
+group 'com.kumasuke'
+version '1.0-SNAPSHOT'
+
+apply plugin: 'java'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testCompile 'junit:junit:4.12'
+    compile('org.jsoup:jsoup:1.8.3', 'dom4j:dom4j:1.6.1')
+    compile('com.googlecode.json-simple:json-simple:1.1.1') {
+        exclude group: 'junit', module: 'junit'
+    }
+}
